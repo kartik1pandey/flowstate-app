@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  pathway:
+    build: ./services/pathway_engine
+    container_name: flowstate_pathway
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/pathway_engine/input_stream:/app/input_stream
+      - ./services/pathway_engine/output:/app/output
+      - ./services/pathway_engine/sessions_stream:/app/sessions_stream
+      - ./services/pathway_engine/rag_index:/app/rag_index
+      - ./services/pathway_engine/interventions:/app/interventions
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - flowstate_network
+
+networks:
+  flowstate_network:
+    driver: bridge

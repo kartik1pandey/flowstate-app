@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+.env.local
+.env.production
+*.env
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Pathway outputs
+services/pathway_engine/input_stream/
+services/pathway_engine/output/
+services/pathway_engine/sessions_stream/
+services/pathway_engine/rag_index/
+services/pathway_engine/interventions/
+
+# Database
+*.db
+*.sqlite
+
+# Misc
+.vercel
+.render
+
+# Documentation (exclude most from repo)
+*.md
+!README.md
+
+# Exclude unnecessary folders
+edu-hack-class-classif/
+flowstate-app/
+backend-new/
+snitback/

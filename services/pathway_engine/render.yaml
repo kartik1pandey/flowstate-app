@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: flowstate-pathway
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
