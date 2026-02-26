@@ -13,11 +13,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const skip = parseInt(req.query.skip as string) || 0;
 
-    const sessions = await FlowSession.find({ userId: req.userId })
-      .sort({ startTime: -1 })
-      .limit(limit)
-      .skip(skip)
-      .lean();
+    const allSessions = await FlowSession.find({ userId: req.userId! });
+    const sessions = allSessions.slice(skip, skip + limit);
 
     res.json({ sessions });
   } catch (error) {
@@ -32,7 +29,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     const session = await FlowSession.findOne({
       _id: req.params.id,
       userId: req.userId,
-    }).lean();
+    });
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -103,10 +100,10 @@ router.patch('/:id', async (req: AuthRequest, res: Response) => {
     const updates = req.body;
 
     const session = await FlowSession.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
+      { _id: req.params.id, userId: req.userId! },
       { $set: updates },
       { new: true }
-    ).lean();
+    );
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });

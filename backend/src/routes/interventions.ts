@@ -13,15 +13,13 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const sessionId = req.query.sessionId as string;
 
-    const query: any = { userId: req.userId };
+    const query: any = { userId: req.userId! };
     if (sessionId) {
       query.sessionId = sessionId;
     }
 
-    const interventions = await Intervention.find(query)
-      .sort({ timestamp: -1 })
-      .limit(limit)
-      .lean();
+    const allInterventions = await Intervention.find(query);
+    const interventions = allInterventions.slice(0, limit);
 
     res.json({ interventions });
   } catch (error) {
@@ -62,10 +60,10 @@ router.patch('/:id', async (req: AuthRequest, res: Response) => {
     const { completed, effectiveness } = req.body;
 
     const intervention = await Intervention.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
+      { _id: req.params.id, userId: req.userId! },
       { $set: { completed, effectiveness } },
       { new: true }
-    ).lean();
+    );
 
     if (!intervention) {
       return res.status(404).json({ error: 'Intervention not found' });

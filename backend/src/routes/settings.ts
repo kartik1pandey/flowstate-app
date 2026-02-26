@@ -10,7 +10,7 @@ router.use(authenticate);
 // GET /api/settings - Get user settings
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
-    let settings: any = await UserSettings.findOne({ userId: req.userId }).lean();
+    let settings = await UserSettings.findOne({ userId: req.userId });
 
     // Create default settings if they don't exist
     if (!settings) {
@@ -33,7 +33,7 @@ router.patch('/', async (req: AuthRequest, res: Response) => {
       { userId: req.userId },
       { $set: updates },
       { new: true, upsert: true }
-    ).lean();
+    );
 
     res.json({ settings });
   } catch (error) {

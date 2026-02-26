@@ -25,11 +25,9 @@ async function getValidAccessToken(user: any) {
     
     const tokenData = tokens as any;
     
-    await User.findByIdAndUpdate(user._id, {
-      $set: {
-        spotifyAccessToken: tokenData.access_token,
-        spotifyTokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
-      },
+    await User.findByIdAndUpdate(user.id, {
+      spotifyAccessToken: tokenData.access_token,
+      spotifyTokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
     });
 
     return tokenData.access_token;
@@ -41,7 +39,7 @@ async function getValidAccessToken(user: any) {
 // GET /api/spotify/auth - Get Spotify authorization URL
 router.get('/auth', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -115,16 +113,15 @@ router.get('/callback', async (req, res) => {
     const tokenData = tokens as any;
 
     // Save tokens to user profile
-    await User.findOneAndUpdate(
-      { email: state },
-      {
-        $set: {
+    await User.findOne({ email: state as string }).then(async (user) => {
+      if (user) {
+        await User.findByIdAndUpdate(user.id, {
           spotifyAccessToken: tokenData.access_token,
           spotifyRefreshToken: tokenData.refresh_token,
           spotifyTokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
-        },
+        });
       }
-    );
+    });
 
     res.redirect(`${FRONTEND_URL}/spaces/music?spotify_connected=true`);
   } catch (error) {
@@ -136,7 +133,7 @@ router.get('/callback', async (req, res) => {
 // GET /api/spotify/top-tracks - Get user's top tracks
 router.get('/top-tracks', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -188,7 +185,7 @@ router.get('/top-tracks', authenticate, async (req: AuthRequest, res: Response) 
 // GET /api/spotify/search - Search for tracks
 router.get('/search', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -216,7 +213,7 @@ router.get('/search', authenticate, async (req: AuthRequest, res: Response) => {
 // POST /api/spotify/recommendations - Get AI-powered music recommendations
 router.post('/recommendations', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -376,7 +373,7 @@ router.post('/recommendations', authenticate, async (req: AuthRequest, res: Resp
 // POST /api/spotify/create-playlist - Create playlist and add tracks
 router.post('/create-playlist', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -466,7 +463,7 @@ router.post('/create-playlist', authenticate, async (req: AuthRequest, res: Resp
 // GET /api/spotify/playback - Get current playback state
 router.get('/playback', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -500,7 +497,7 @@ router.get('/playback', authenticate, async (req: AuthRequest, res: Response) =>
 // POST /api/spotify/playback - Control Spotify playback
 router.post('/playback', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId!);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

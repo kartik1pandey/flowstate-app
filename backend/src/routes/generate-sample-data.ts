@@ -1,6 +1,7 @@
 import express, { Response } from 'express';
 import FlowSession from '../models/FlowSession';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { pool } from '../config/database';
 
 const router = express.Router();
 
@@ -100,7 +101,11 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     }
 
     // Insert all sessions
-    const createdSessions = await FlowSession.insertMany(sessions);
+    const createdSessions = [];
+    for (const session of sessions) {
+      const created = await FlowSession.create(session);
+      createdSessions.push(created);
+    }
 
     res.json({
       success: true,
@@ -116,16 +121,21 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 // DELETE /api/generate-sample-data - Delete all sample sessions
 router.delete('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const result = await FlowSession.deleteMany({
-      userId: req.userId,
-      notes: { $regex: /sample/i },
-    });
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        `DELETE FROM flow_sessions WHERE user_id = $1 AND notes ILIKE '%sample%'`,
+        [req.userId]
+      );
 
-    res.json({
-      success: true,
-      message: `Deleted ${result.deletedCount} sample sessions`,
-      deletedCount: result.deletedCount,
-    });
+      res.json({
+        success: true,
+        message: `Deleted ${result.rowCount} sample sessions`,
+        deletedCount: result.rowCount,
+      });
+    } finally {
+      client.release();
+    }
   } catch (error) {
     console.error('Error deleting sample data:', error);
     res.status(500).json({ error: 'Failed to delete sample data' });

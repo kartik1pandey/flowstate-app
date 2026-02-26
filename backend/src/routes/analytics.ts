@@ -31,9 +31,9 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     }
 
     const sessions = await FlowSession.find({
-      userId: req.userId,
+      userId: req.userId!,
       startTime: { $gte: startDate, $lte: endDate },
-    }).lean();
+    });
 
     // Calculate analytics
     const totalSessions = sessions.length;

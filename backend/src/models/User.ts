@@ -1,125 +1,155 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import { pool } from '../config/database';
 
-export interface IUser extends Document {
+export interface IUser {
+  id: string;
   email: string;
   name: string;
   password: string;
   image?: string;
-  
-  // Personal Information
   age?: number;
   dateOfBirth?: Date;
   gender?: string;
   phoneNumber?: string;
-  
-  // Professional Information
   occupation?: string;
   company?: string;
   jobTitle?: string;
   industry?: string;
   yearsOfExperience?: number;
-  
-  // Educational Background
   educationLevel?: string;
   fieldOfStudy?: string;
   institution?: string;
-  
-  // Interests and Goals
   primaryGoals?: string[];
   focusAreas?: string[];
   hobbies?: string[];
   learningInterests?: string[];
-  
-  // Work Preferences
   preferredWorkingHours?: string;
   workEnvironment?: string;
   productivityChallenges?: string[];
-  
-  // Additional Context
   timezone?: string;
   country?: string;
   city?: string;
   bio?: string;
-  
-  // Spotify Integration
   spotifyAccessToken?: string;
   spotifyRefreshToken?: string;
   spotifyTokenExpiry?: Date;
-  
   createdAt: Date;
   updatedAt: Date;
 }
 
-const UserSchema = new Schema<IUser>(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    image: {
-      type: String,
-    },
-    
-    // Personal Information
-    age: { type: Number },
-    dateOfBirth: { type: Date },
-    gender: { type: String },
-    phoneNumber: { type: String },
-    
-    // Professional Information
-    occupation: { type: String },
-    company: { type: String },
-    jobTitle: { type: String },
-    industry: { type: String },
-    yearsOfExperience: { type: Number },
-    
-    // Educational Background
-    educationLevel: { type: String },
-    fieldOfStudy: { type: String },
-    institution: { type: String },
-    
-    // Interests and Goals
-    primaryGoals: [{ type: String }],
-    focusAreas: [{ type: String }],
-    hobbies: [{ type: String }],
-    learningInterests: [{ type: String }],
-    
-    // Work Preferences
-    preferredWorkingHours: { type: String },
-    workEnvironment: { type: String },
-    productivityChallenges: [{ type: String }],
-    
-    // Additional Context
-    timezone: { type: String },
-    country: { type: String },
-    city: { type: String },
-    bio: { type: String },
-    
-    // Spotify Integration
-    spotifyAccessToken: { type: String },
-    spotifyRefreshToken: { type: String },
-    spotifyTokenExpiry: { type: Date },
-  },
-  {
-    timestamps: true,
+class User {
+  static async findOne(query: { email?: string; id?: string }): Promise<IUser | null> {
+    const client = await pool.connect();
+    try {
+      let result;
+      if (query.email) {
+        result = await client.query('SELECT * FROM users WHERE email = $1', [query.email]);
+      } else if (query.id) {
+        result = await client.query('SELECT * FROM users WHERE id = $1', [query.id]);
+      }
+      
+      if (!result || result.rows.length === 0) return null;
+      return this.mapRowToUser(result.rows[0]);
+    } finally {
+      client.release();
+    }
   }
-);
 
-// Remove the duplicate index line
-// UserSchema.index({ email: 1 }); // <-- Remove this
+  static async findById(id: string): Promise<IUser | null> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query('SELECT * FROM users WHERE id = $1', [id]);
+      if (result.rows.length === 0) return null;
+      return this.mapRowToUser(result.rows[0]);
+    } finally {
+      client.release();
+    }
+  }
 
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+  static async create(userData: Partial<IUser>): Promise<IUser> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        `INSERT INTO users (email, name, password, image) 
+         VALUES ($1, $2, $3, $4) 
+         RETURNING *`,
+        [userData.email, userData.name, userData.password, userData.image || null]
+      );
+      return this.mapRowToUser(result.rows[0]);
+    } finally {
+      client.release();
+    }
+  }
+
+  static async findByIdAndUpdate(id: string, updates: Partial<IUser>): Promise<IUser | null> {
+    const client = await pool.connect();
+    try {
+      const fields: string[] = [];
+      const values: any[] = [];
+      let paramCount = 1;
+
+      Object.entries(updates).forEach(([key, value]) => {
+        const snakeKey = this.camelToSnake(key);
+        fields.push(`${snakeKey} = $${paramCount}`);
+        values.push(value);
+        paramCount++;
+      });
+
+      if (fields.length === 0) return this.findById(id);
+
+      fields.push(`updated_at = NOW()`);
+      values.push(id);
+
+      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING *`;
+      const result = await client.query(query, values);
+      
+      if (result.rows.length === 0) return null;
+      return this.mapRowToUser(result.rows[0]);
+    } finally {
+      client.release();
+    }
+  }
+
+  private static camelToSnake(str: string): string {
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  }
+
+  private static mapRowToUser(row: any): IUser {
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      password: row.password,
+      image: row.image,
+      age: row.age,
+      dateOfBirth: row.date_of_birth,
+      gender: row.gender,
+      phoneNumber: row.phone_number,
+      occupation: row.occupation,
+      company: row.company,
+      jobTitle: row.job_title,
+      industry: row.industry,
+      yearsOfExperience: row.years_of_experience,
+      educationLevel: row.education_level,
+      fieldOfStudy: row.field_of_study,
+      institution: row.institution,
+      primaryGoals: row.primary_goals,
+      focusAreas: row.focus_areas,
+      hobbies: row.hobbies,
+      learningInterests: row.learning_interests,
+      preferredWorkingHours: row.preferred_working_hours,
+      workEnvironment: row.work_environment,
+      productivityChallenges: row.productivity_challenges,
+      timezone: row.timezone,
+      country: row.country,
+      city: row.city,
+      bio: row.bio,
+      spotifyAccessToken: row.spotify_access_token,
+      spotifyRefreshToken: row.spotify_refresh_token,
+      spotifyTokenExpiry: row.spotify_token_expiry,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+}
 
 export default User;

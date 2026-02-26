@@ -44,16 +44,16 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Create default settings for the user
     await UserSettings.create({
-      userId: user._id,
+      userId: user.id,
     });
 
     // Generate token
-    const token = generateToken(user._id.toString(), user.email);
+    const token = generateToken(user.id, user.email);
 
     res.status(201).json({
       message: 'User created successfully',
       user: {
-        id: user._id.toString(),
+        id: user.id,
         email: user.email,
         name: user.name,
       },
@@ -87,11 +87,11 @@ router.post('/signin', async (req: Request, res: Response) => {
     }
 
     // Generate token
-    const token = generateToken(user._id.toString(), user.email);
+    const token = generateToken(user.id, user.email);
 
     res.json({
       user: {
-        id: user._id.toString(),
+        id: user.id,
         email: user.email,
         name: user.name,
         image: user.image,
@@ -107,13 +107,16 @@ router.post('/signin', async (req: Request, res: Response) => {
 // GET /api/auth/profile - Get user profile
 router.get('/profile', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.userId!);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
+
+    res.json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -129,17 +132,16 @@ router.patch('/profile', authenticate, async (req: AuthRequest, res: Response) =
     delete updates.password;
     delete updates.email;
 
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      { $set: updates },
-      { new: true }
-    ).select('-password');
+    const user = await User.findByIdAndUpdate(req.userId!, updates);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
+
+    res.json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
