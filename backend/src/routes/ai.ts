@@ -52,7 +52,7 @@ router.post('/chat', async (req: AuthRequest, res: Response) => {
       return res.status(groqResponse.status).json({ error: 'Failed to generate AI response' });
     }
 
-    const groqData = await groqResponse.json();
+    const groqData = await groqResponse.json() as any;
     const response = groqData.choices[0]?.message?.content || 'No response generated';
 
     res.json({ response });

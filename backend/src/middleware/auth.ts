@@ -37,10 +37,9 @@ export const authenticate = async (
 };
 
 export const generateToken = (userId: string, email: string): string => {
-  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
   return jwt.sign(
     { id: userId, userId, email },
     JWT_SECRET as string,
-    { expiresIn: expiresIn as string }
+    { expiresIn: '7d' }
   );
 };

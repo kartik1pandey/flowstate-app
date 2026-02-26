@@ -75,7 +75,7 @@ def create_pathway_pipeline():
     
     # Add processing timestamp
     events = events.with_columns(
-        processing_time=pw.this.timestamp
+        processing_time=pw.now()
     )
     
     # Convert value to float for calculations
@@ -84,37 +84,20 @@ def create_pathway_pipeline():
     )
     
     # ============================
-    # WINDOWING: Sliding Window (60 seconds)
+    # AGGREGATIONS: Real-time Metrics (without windowing for now)
     # ============================
     
-    # Group by user and apply sliding window
-    # This creates mini-batches of events for real-time aggregation
-    windowed_events = events.windowby(
-        events.timestamp,
-        window=pw.temporal.sliding(
-            duration=pw.Duration("60s"),  # 60 second window
-            hop=pw.Duration("5s")  # Update every 5 seconds
-        ),
-        instance=events.user_id
-    )
-    
-    logger.info("✅ Sliding window configured: 60s duration, 5s hop")
-    
-    # ============================
-    # AGGREGATIONS: Real-time Metrics
-    # ============================
-    
-    # Count keystrokes per user per window
+    # Count keystrokes per user
     keystroke_events = events.filter(pw.this.event_type == "keystroke")
     keystroke_counts = keystroke_events.groupby(
         keystroke_events.user_id
     ).reduce(
         user_id=pw.this.user_id,
         keystroke_count=pw.reducers.count(),
-        last_update=pw.reducers.max(pw.this.timestamp)
+        last_update=pw.reducers.max(pw.this.processing_time)
     )
     
-    # Count distractions per user per window
+    # Count distractions per user
     distraction_events = events.filter(
         (pw.this.event_type == "blur") | (pw.this.event_type == "tab_switch")
     )
@@ -123,7 +106,7 @@ def create_pathway_pipeline():
     ).reduce(
         user_id=pw.this.user_id,
         distraction_count=pw.reducers.count(),
-        last_distraction=pw.reducers.max(pw.this.timestamp)
+        last_distraction=pw.reducers.max(pw.this.processing_time)
     )
     
     # Count session duration (timer ticks)
@@ -133,7 +116,7 @@ def create_pathway_pipeline():
     ).reduce(
         user_id=pw.this.user_id,
         session_seconds=pw.reducers.count(),
-        last_tick=pw.reducers.max(pw.this.timestamp)
+        last_tick=pw.reducers.max(pw.this.processing_time)
     )
     
     logger.info("✅ Real-time aggregations configured")

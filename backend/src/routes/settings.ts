@@ -10,7 +10,7 @@ router.use(authenticate);
 // GET /api/settings - Get user settings
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
-    let settings = await UserSettings.findOne({ userId: req.userId }).lean();
+    let settings: any = await UserSettings.findOne({ userId: req.userId }).lean();
 
     // Create default settings if they don't exist
     if (!settings) {

@@ -640,6 +640,12 @@ export default function CodeEditorSpace() {
       const endTime = new Date();
       const duration = Math.floor((endTime.getTime() - sessionStartTime.getTime()) / 1000);
       
+      // Calculate focus score based on metrics
+      const focusScore = Math.min(100, Math.round(
+        (totalKeystrokes / 100) * 40 + 
+        (focusTime / duration) * 60
+      ));
+      
       // Save session with code-specific data
       await sessionsAPI.create({
         startTime: sessionStartTime,

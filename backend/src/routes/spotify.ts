@@ -23,14 +23,16 @@ async function getValidAccessToken(user: any) {
       SPOTIFY_CLIENT_SECRET
     );
     
+    const tokenData = tokens as any;
+    
     await User.findByIdAndUpdate(user._id, {
       $set: {
-        spotifyAccessToken: tokens.access_token,
-        spotifyTokenExpiry: new Date(Date.now() + tokens.expires_in * 1000),
+        spotifyAccessToken: tokenData.access_token,
+        spotifyTokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
       },
     });
 
-    return tokens.access_token;
+    return tokenData.access_token;
   }
 
   return user.spotifyAccessToken;
@@ -110,15 +112,16 @@ router.get('/callback', async (req, res) => {
     }
 
     const tokens = await tokenResponse.json();
+    const tokenData = tokens as any;
 
     // Save tokens to user profile
     await User.findOneAndUpdate(
       { email: state },
       {
         $set: {
-          spotifyAccessToken: tokens.access_token,
-          spotifyRefreshToken: tokens.refresh_token,
-          spotifyTokenExpiry: new Date(Date.now() + tokens.expires_in * 1000),
+          spotifyAccessToken: tokenData.access_token,
+          spotifyRefreshToken: tokenData.refresh_token,
+          spotifyTokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
         },
       }
     );
@@ -274,7 +277,7 @@ router.post('/recommendations', authenticate, async (req: AuthRequest, res: Resp
       return res.status(groqResponse.status).json({ error: 'Failed to generate recommendations' });
     }
 
-    const groqData = await groqResponse.json();
+    const groqData = await groqResponse.json() as any;
     const aiSuggestions = groqData.choices[0]?.message?.content || '';
 
     // Parse song suggestions
@@ -293,7 +296,7 @@ router.post('/recommendations', authenticate, async (req: AuthRequest, res: Resp
           const searchData = await spotifyApiCall(
             `https://api.spotify.com/v1/search?q=${encodeURIComponent(cleanLine)}&type=track&limit=3`,
             accessToken
-          );
+          ) as any;
 
           if (searchData.tracks && searchData.tracks.items && searchData.tracks.items.length > 0) {
             tracks.push(searchData.tracks.items[0]);
@@ -346,7 +349,7 @@ router.post('/recommendations', authenticate, async (req: AuthRequest, res: Resp
 
     let explanation = 'These tracks are curated to match your current focus needs.';
     if (explanationResponse.ok) {
-      const explData = await explanationResponse.json();
+      const explData = await explanationResponse.json() as any;
       explanation = explData.choices[0]?.message?.content || explanation;
     }
 
@@ -392,7 +395,7 @@ router.post('/create-playlist', authenticate, async (req: AuthRequest, res: Resp
       throw new Error('Failed to get user profile');
     }
 
-    const profile = await profileResponse.json();
+    const profile = await profileResponse.json() as any;
 
     // Create playlist
     const truncatedDescription = description 
@@ -429,7 +432,7 @@ router.post('/create-playlist', authenticate, async (req: AuthRequest, res: Resp
       throw new Error('Failed to create playlist');
     }
 
-    const playlist = await createResponse.json();
+    const playlist = await createResponse.json() as any;
 
     // Add tracks to playlist
     if (trackUris && trackUris.length > 0) {
