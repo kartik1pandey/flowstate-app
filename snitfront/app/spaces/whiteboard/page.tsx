@@ -125,6 +125,13 @@ export default function WhiteboardSpace() {
       const canvasCoverage = calculateCanvasCoverage();
       const creativityScore = calculateCreativityScore();
       
+      // Calculate focus score based on whiteboard metrics
+      const focusScore = Math.min(100, Math.round(
+        (strokes / 50) * 30 +  // Stroke activity
+        (colorsUsedSet.size / 5) * 20 +  // Color variety
+        creativityScore * 0.5  // Creativity
+      ));
+      
       // Save session with whiteboard-specific data
       await sessionsAPI.create({
         startTime: new Date(Date.now() - totalStrokeTime),
