@@ -34,7 +34,7 @@ FlowState is an intelligent productivity platform that monitors your work patter
 ### ✨ Key Features
 
 - **🎨 Dual Workspace Modes**
-  - **Code Space**: Syntax-highlighted editor with real-time flow tracking
+  - **Code Space**: Syntax highlighted editor with real-time flow tracking
   - **Whiteboard Space**: Creative canvas for brainstorming and visual thinking
 
 - **📊 Real-Time Analytics**
@@ -364,16 +364,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[Render](https://render.com)** - Backend hosting
 - **[Spotify](https://developer.spotify.com)** - Music API integration
 
----
-
-## 📞 Support
-
-- 📧 Email: support@flowstate.app
-- 💬 Discord: [Join our community](https://discord.gg/flowstate)
-- 🐦 Twitter: [@flowstate_app](https://twitter.com/flowstate_app)
-- 📖 Docs: [docs.flowstate.app](./docs)
-
----
 
 ## ⭐ Star History
 
