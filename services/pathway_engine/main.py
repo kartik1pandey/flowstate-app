@@ -73,12 +73,8 @@ def create_pathway_pipeline():
     # FEATURE ENGINEERING
     # ============================
     
-    # Add processing timestamp
-    events = events.with_columns(
-        processing_time=pw.now()
-    )
-    
-    # Convert value to float for calculations
+    # Add processing timestamp using current time
+    # Note: Pathway doesn't have pw.now(), we'll use the event timestamp
     events = events.with_columns(
         value_float=pw.cast(float, pw.this.value)
     )
@@ -94,7 +90,7 @@ def create_pathway_pipeline():
     ).reduce(
         user_id=pw.this.user_id,
         keystroke_count=pw.reducers.count(),
-        last_update=pw.reducers.max(pw.this.processing_time)
+        last_update=pw.reducers.max(pw.this.timestamp)
     )
     
     # Count distractions per user
@@ -106,7 +102,7 @@ def create_pathway_pipeline():
     ).reduce(
         user_id=pw.this.user_id,
         distraction_count=pw.reducers.count(),
-        last_distraction=pw.reducers.max(pw.this.processing_time)
+        last_distraction=pw.reducers.max(pw.this.timestamp)
     )
     
     # Count session duration (timer ticks)
@@ -116,7 +112,7 @@ def create_pathway_pipeline():
     ).reduce(
         user_id=pw.this.user_id,
         session_seconds=pw.reducers.count(),
-        last_tick=pw.reducers.max(pw.this.processing_time)
+        last_tick=pw.reducers.max(pw.this.timestamp)
     )
     
     logger.info("✅ Real-time aggregations configured")
@@ -182,9 +178,7 @@ def create_pathway_pipeline():
             pw.this.keystroke_count,
             pw.this.distraction_count,
             pw.this.session_seconds
-        ),
-        
-        timestamp=pw.now()
+        )
     )
     
     logger.info("✅ Flow score computation configured")
@@ -198,8 +192,7 @@ def create_pathway_pipeline():
         user_id=pw.this.user_id,
         alert_type=pw.const("deep_flow"),
         flow_score=pw.this.flow_score,
-        message=pw.const("User in deep flow state"),
-        timestamp=pw.this.timestamp
+        message=pw.const("User in deep flow state")
     )
     
     # Distraction Spike Alert (distractions > 5)
@@ -207,8 +200,7 @@ def create_pathway_pipeline():
         user_id=pw.this.user_id,
         alert_type=pw.const("distraction_spike"),
         distraction_count=pw.this.distraction_count,
-        message=pw.const("High distraction detected"),
-        timestamp=pw.this.timestamp
+        message=pw.const("High distraction detected")
     )
     
     # Burnout Risk Alert (score < 40 and session > 30 seconds)
@@ -219,8 +211,7 @@ def create_pathway_pipeline():
         alert_type=pw.const("burnout_risk"),
         flow_score=pw.this.flow_score,
         session_seconds=pw.this.session_seconds,
-        message=pw.const("Burnout risk detected"),
-        timestamp=pw.this.timestamp
+        message=pw.const("Burnout risk detected")
     )
     
     logger.info("✅ Alert detection configured")
