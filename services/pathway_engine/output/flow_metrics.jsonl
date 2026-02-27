@@ -1,0 +1,11 @@
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 40.35, "keystroke_count": 1, "distraction_count": 0, "timestamp": "2026-02-26T15:52:50.586660"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 40.7, "keystroke_count": 2, "distraction_count": 0, "timestamp": "2026-02-26T15:52:50.842447"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 41.05, "keystroke_count": 3, "distraction_count": 0, "timestamp": "2026-02-26T15:52:51.103012"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 41.4, "keystroke_count": 4, "distraction_count": 0, "timestamp": "2026-02-26T15:52:51.371281"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 41.75, "keystroke_count": 5, "distraction_count": 0, "timestamp": "2026-02-26T15:52:51.642971"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 42.1, "keystroke_count": 6, "distraction_count": 0, "timestamp": "2026-02-26T15:52:51.905002"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 42.45, "keystroke_count": 7, "distraction_count": 0, "timestamp": "2026-02-26T15:52:52.162208"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 42.8, "keystroke_count": 8, "distraction_count": 0, "timestamp": "2026-02-26T15:52:52.432637"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 43.15, "keystroke_count": 9, "distraction_count": 0, "timestamp": "2026-02-26T15:52:52.703863"}
+{"user_id": "test123", "space_type": "code", "event_type": "keystroke", "flow_score": 43.5, "keystroke_count": 10, "distraction_count": 0, "timestamp": "2026-02-26T15:52:52.964175"}
+{"user_id": "test123", "space_type": "code", "event_type": "blur", "flow_score": 41.5, "keystroke_count": 10, "distraction_count": 1, "timestamp": "2026-02-26T15:52:53.242651"}

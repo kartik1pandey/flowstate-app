@@ -3,11 +3,14 @@ node_modules/
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 
 # Environment variables
 .env
 .env.local
-.env.production
+.env.*.local
 *.env
 
 # Build outputs
@@ -15,39 +18,124 @@ dist/
 build/
 .next/
 out/
-
-# Logs
 *.log
-
-# OS files
-.DS_Store
-Thumbs.db
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
-# Pathway outputs
-services/pathway_engine/input_stream/
-services/pathway_engine/output/
-services/pathway_engine/sessions_stream/
-services/pathway_engine/rag_index/
-services/pathway_engine/interventions/
+# Testing
+coverage/
+.nyc_output/
+*.test.js.snap
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Database
 *.db
 *.sqlite
+*.sqlite3
+
+# Docker
+.dockerignore
 
 # Misc
+.cache/
+.parcel-cache/
 .vercel
 .render
 
-# Documentation (exclude most from repo)
-*.md
-!README.md
+# Documentation (old/temporary)
+*_OLD.md
+*_BACKUP.md
+*_TEMP.md
+ALL_*.md
+COMPLETE_*.md
+FINAL_*.md
+FIX_*.md
+FIXES_*.md
+ERRORS_*.md
+EVERYTHING_*.md
+IMMEDIATE_*.md
+QUICK_*.md
+READY_*.md
+RESTART_*.md
+SETUP_*.md
+START_*.md
+SYSTEM_*.md
+TESTING_*.md
+TROUBLESHOOTING_*.md
+UI_*.md
+VISUAL_*.md
+WINNING_*.md
+ACTION_*.md
+ANALYTICS_*.md
+API_*.md
+BACKEND_*.md
+COLOR_*.md
+CONVERSION_*.md
+CURRENT_*.md
+DEPLOY*.md
+DEPLOYMENT_*.md
+FEATURES_*.md
+FLOWSTATE_*.md
+FRONTEND_*.md
+GITHUB_*.md
+HACKATHON_*.md
+HOW_*.md
+LANDING_*.md
+LOCAL_*.md
+MONGODB_*.md
+PATHWAY_*.md
+PLATFORM_*.md
+PRODUCTION_*.md
+PROFILE_*.md
+PUSH_*.md
+README_*.md
+SNITFRONT_*.md
+SPACES_*.md
+SPOTIFY_*.md
+SUPABASE_*.md
+*.txt
+*.bat
+*.ps1
+check-*.js
+check-*.ps1
+fix-*.js
+fix-*.sql
+test-*.js
+test-*.ps1
+start-*.ps1
+deploy-*.md
 
-# Exclude unnecessary folders
-edu-hack-class-classif/
-flowstate-app/
-backend-new/
-snitback/
+# Keep important files
+!README.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!LICENSE
+!.gitignore
+!package.json
+!package-lock.json
+!tsconfig.json
+!.env.example

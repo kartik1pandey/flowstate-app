@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: flowstate_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: flowstate
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - flowstate_network
+
+  # Express Backend
+  backend:
+    build: ./backend
+    container_name: flowstate_backend
+    environment:
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/flowstate?authSource=admin
+      JWT_SECRET: your-secret-key-change-in-production
+      FRONTEND_URL: http://localhost:3000
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+      SPOTIFY_REDIRECT_URI: http://localhost:3001/api/spotify/callback
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      PATHWAY_API_URL: http://pathway:8001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - pathway
+    networks:
+      - flowstate_network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Pathway Real-Time Analytics Engine
+  pathway:
+    build: ./services/pathway_engine
+    container_name: flowstate_pathway
+    environment:
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/flowstate?authSource=admin
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mongodb
+    restart: always
+    networks:
+      - flowstate_network
+    volumes:
+      - ./services/pathway_engine/output:/app/output
+
+  # Next.js Frontend
+  frontend:
+    build: ./snitfront
+    container_name: flowstate_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_PATHWAY_URL: http://localhost:8001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - pathway
+    networks:
+      - flowstate_network
+    volumes:
+      - ./snitfront:/app
+      - /app/node_modules
+      - /app/.next
+
+networks:
+  flowstate_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
