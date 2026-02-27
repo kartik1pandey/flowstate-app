@@ -110,7 +110,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
+              <Link href="/auth/signup">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -257,7 +257,7 @@ export default function LandingPage() {
                 Join thousands of professionals who've already discovered their flow state
               </p>
               
-              <Link href="/auth/register">
+              <Link href="/auth/signup">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
