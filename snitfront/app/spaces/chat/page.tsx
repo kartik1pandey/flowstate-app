@@ -96,6 +96,8 @@ const ChatSpace = () => {
 
   // Fetch user context data from API
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchUserContext = async () => {
       try {
         const response = await fetch('/api/chat/context');
@@ -117,7 +119,7 @@ const ChatSpace = () => {
         console.error('Failed to fetch user context:', error);
         // Fallback to mock data
         const mockContext: UserContext = {
-          name: "User",
+          name: user?.name || "User",
           flowSessions: 0,
           avgFlowScore: 0,
           totalFocusTime: 0,
@@ -141,7 +143,7 @@ const ChatSpace = () => {
     };
 
     fetchUserContext();
-  }, []);
+  }, [isAuthenticated, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
