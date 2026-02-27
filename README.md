@@ -11,7 +11,7 @@
 
 **Prevent developer burnout through real-time flow state detection and intelligent interventions**
 
-[🚀 Live Demo](https://flowstate-app-vnlr.vercel.app) • [📖 Documentation](./docs) • [🐛 Report Bug](../../issues) • [✨ Request Feature](../../issues)
+[🚀 Live Demo](https://flowstate-app-vnlr.vercel.app) • [📖 Documentation](./docs) • [🐛 Report Bug](https://github.com/yourusername/flowstate/issues) • [✨ Request Feature](https://github.com/yourusername/flowstate/issues)
 
 </div>
 
@@ -20,6 +20,16 @@
 ## 🎯 What is FlowState?
 
 FlowState is an intelligent productivity platform that monitors your work patterns in real-time, detects when you're in a flow state, and provides timely interventions to prevent burnout. Built with cutting-edge streaming analytics using **Pathway**, it processes behavioral data instantly to keep you productive and healthy.
+
+### ⚡ Quick Navigation
+
+- [Key Features](#-key-features)
+- [Architecture](#-architecture)
+- [Feature Architecture Map](#-feature-architecture-map)
+- [Repository Layout](#-repository-layout)
+- [Quick Start](#-quick-start)
+- [Environment Variables](#-environment-variables)
+- [Documentation](#-documentation)
 
 ### ✨ Key Features
 
@@ -81,6 +91,7 @@ FlowState is an intelligent productivity platform that monitors your work patter
 ### 🛠️ Tech Stack
 
 **Frontend**
+
 - Next.js 14 (App Router)
 - TypeScript
 - TailwindCSS
@@ -89,6 +100,7 @@ FlowState is an intelligent productivity platform that monitors your work patter
 - Excalidraw
 
 **Backend**
+
 - Node.js + Express
 - TypeScript
 - PostgreSQL (Supabase)
@@ -96,10 +108,49 @@ FlowState is an intelligent productivity platform that monitors your work patter
 - Spotify Web API
 
 **Analytics Engine**
+
 - **Pathway** (Real-time streaming)
 - Python 3.11
 - FastAPI
 - Docker
+
+---
+
+## 🧩 Feature Architecture Map
+
+| Feature                                     | Frontend                                                              | Backend/API                                                   | External/Engine                  |
+| ------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------- |
+| Authentication & profile                    | `snitfront/app/auth`                                                  | `/api/auth` (`backend/src/routes/auth.ts`)                    | JWT + PostgreSQL                 |
+| Flow monitoring                             | `snitfront/hooks/useFlowMonitoring.ts`                                | `/api/sessions`, `/api/pathway/event`                         | Pathway ingestion                |
+| Interventions & reminders                   | `snitfront/components/InterventionOverlay.tsx`, `ReminderManager.tsx` | `/api/interventions`, `/api/settings`                         | Pathway intervention logic       |
+| Analytics dashboard                         | `snitfront/app/analytics`                                             | `/api/analytics`, `/api/pathway/flow`, `/api/pathway/metrics` | Pathway metrics pipeline         |
+| Focus spaces (code/whiteboard/writing/etc.) | `snitfront/app/spaces/*`                                              | `/api/sessions`, `/api/execute`                               | Monaco, Excalidraw, runtime exec |
+| AI productivity chat                        | `snitfront/app/spaces/chat`                                           | `/api/ai/chat`                                                | Groq API                         |
+| Music focus assistant                       | `snitfront/app/spaces/music`                                          | `/api/spotify/*`                                              | Spotify Web API + Groq           |
+| Settings & personalization                  | `snitfront/app/settings`                                              | `/api/settings`                                               | User settings model              |
+| Reports/notifications                       | `snitfront/app/settings/reports`                                      | `/api/whatsapp/*` (stub), reporting routes                    | WhatsApp integration placeholder |
+
+---
+
+## 📁 Repository Layout
+
+```text
+flowstate-app/
+├─ snitfront/                 # Main Next.js frontend
+├─ backend/                   # Main Express + TypeScript API
+├─ services/pathway_engine/   # Python Pathway real-time analytics engine
+├─ edu-hack-class-classif/    # Separate Flask + TensorFlow engagement classifier
+├─ snitback/                  # Legacy/alternate Next.js API backend surface
+├─ docs/                      # Product + setup docs
+└─ devdocs/                   # Repository/process docs moved from root
+```
+
+### Core runtime components
+
+- **User Experience:** `snitfront` (spaces, dashboard, analytics, settings)
+- **Primary API:** `backend` (auth, sessions, interventions, analytics, spotify, ai/ml)
+- **Streaming analytics:** `services/pathway_engine` (event ingestion + flow scoring)
+- **Optional ML microservice:** `edu-hack-class-classif` (image-based engagement scoring)
 
 ---
 
@@ -226,7 +277,8 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 - **[API Reference](./docs/api/API_REFERENCE.md)** - Complete API documentation
 - **[Architecture Guide](./docs/architecture/SYSTEM_ARCHITECTURE.md)** - System design and data flow
 - **[Deployment Guide](./docs/deployment/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
-- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to FlowState
+- **[Contributing Guide](./devdocs/CONTRIBUTING.md)** - How to contribute to FlowState
+- **[Developer Docs](./devdocs)** - Repository standards, improvement plans, and project structure notes
 
 ---
 
@@ -235,6 +287,7 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 ### Deploy to Production
 
 **Frontend (Vercel)**
+
 ```bash
 # Connect your GitHub repo to Vercel
 # Set root directory: snitfront
@@ -243,6 +296,7 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 ```
 
 **Backend (Render)**
+
 ```bash
 # Create new Web Service
 # Root directory: backend
@@ -252,6 +306,7 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 ```
 
 **Pathway (Render)**
+
 ```bash
 # Create new Web Service
 # Root directory: services/pathway_engine
@@ -265,7 +320,7 @@ See [Deployment Guide](./docs/deployment/DEPLOYMENT_GUIDE.md) for detailed instr
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](./devdocs/CONTRIBUTING.md) for details.
 
 ### Development Workflow
 
