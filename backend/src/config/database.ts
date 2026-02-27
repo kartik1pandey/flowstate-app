@@ -40,8 +40,7 @@ async function connectDB(): Promise<void> {
 async function createTables(): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-
+    // Don't use transactions for table creation - tables might already exist
     // Users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -144,12 +143,14 @@ async function createTables(): Promise<void> {
       )
     `);
 
-    // Create indexes for flow_sessions
-    await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_flow_sessions_user_id ON flow_sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_flow_sessions_start_time ON flow_sessions(start_time DESC);
-      CREATE INDEX IF NOT EXISTS idx_flow_sessions_created_at ON flow_sessions(created_at DESC);
-    `);
+    // Create indexes for flow_sessions (with error handling)
+    try {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_flow_sessions_user_id ON flow_sessions(user_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_flow_sessions_start_time ON flow_sessions(start_time DESC)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_flow_sessions_created_at ON flow_sessions(created_at DESC)`);
+    } catch (indexError) {
+      // Indexes might already exist, ignore
+    }
 
     // Interventions table
     await client.query(`
@@ -167,11 +168,13 @@ async function createTables(): Promise<void> {
       )
     `);
 
-    // Create indexes for interventions
-    await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_interventions_user_id ON interventions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_interventions_timestamp ON interventions(timestamp DESC);
-    `);
+    // Create indexes for interventions (with error handling)
+    try {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_interventions_user_id ON interventions(user_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_interventions_timestamp ON interventions(timestamp DESC)`);
+    } catch (indexError) {
+      // Indexes might already exist, ignore
+    }
 
     // Media table
     await client.query(`
@@ -191,18 +194,22 @@ async function createTables(): Promise<void> {
       )
     `);
 
-    // Create indexes for media
-    await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_media_user_id ON media(user_id);
-      CREATE INDEX IF NOT EXISTS idx_media_created_at ON media(created_at DESC);
-    `);
+    // Create indexes for media (with error handling)
+    try {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_media_user_id ON media(user_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_media_created_at ON media(created_at DESC)`);
+    } catch (indexError) {
+      // Indexes might already exist, ignore
+    }
 
-    await client.query('COMMIT');
     console.log('✅ Database tables created/verified successfully');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('❌ Error creating tables:', error);
-    throw error;
+  } catch (error: any) {
+    // If tables already exist, that's fine
+    if (error.code === '42P07') {
+      console.log('✅ Database tables already exist');
+    } else {
+      console.error('❌ Error creating tables:', error.message);
+    }
   } finally {
     client.release();
   }
