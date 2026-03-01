@@ -159,7 +159,7 @@ export const authAPI = {
 
 // Sessions API
 export const sessionsAPI = {
-  getAll: async (params?: { limit?: number; skip?: number }) => {
+  getAll: async (params?: { limit?: number; skip?: number; startDate?: string; endDate?: string }) => {
     const response = await apiClient.get('/api/sessions', { params });
     return response.data;
   },
