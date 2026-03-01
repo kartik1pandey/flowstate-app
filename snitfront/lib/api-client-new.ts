@@ -209,6 +209,31 @@ export const analyticsAPI = {
     const response = await apiClient.get('/api/analytics', { params: { period } });
     return response.data;
   },
+  
+  getOverview: async (timeRange: '7d' | '30d' | '90d' = '7d') => {
+    const response = await apiClient.get('/api/analytics/overview', { params: { timeRange } });
+    return response.data;
+  },
+  
+  getCodeAnalytics: async (timeRange: '7d' | '30d' | '90d' = '7d') => {
+    const response = await apiClient.get('/api/analytics/code', { params: { timeRange } });
+    return response.data;
+  },
+  
+  getWhiteboardAnalytics: async (timeRange: '7d' | '30d' | '90d' = '7d') => {
+    const response = await apiClient.get('/api/analytics/whiteboard', { params: { timeRange } });
+    return response.data;
+  },
+  
+  getInsights: async () => {
+    const response = await apiClient.get('/api/analytics/insights');
+    return response.data;
+  },
+  
+  syncSession: async (sessionId: string) => {
+    const response = await apiClient.post(`/api/analytics/sync/${sessionId}`);
+    return response.data;
+  },
 };
 
 // Settings API

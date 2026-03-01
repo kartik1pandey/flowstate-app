@@ -28,21 +28,25 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
 
--- 2. Verify users table
+-- 2. Fix flow_sessions table - add missing columns
+ALTER TABLE flow_sessions ADD COLUMN IF NOT EXISTS triggers TEXT[];
+ALTER TABLE flow_sessions ADD COLUMN IF NOT EXISTS breakers TEXT[];
+
+-- 3. Verify users table
 SELECT 'Users table columns:' as info;
 SELECT column_name, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'users' AND table_schema = 'public'
 ORDER BY ordinal_position;
 
--- 3. Verify flow_sessions table
+-- 4. Verify flow_sessions table
 SELECT 'Flow sessions table columns:' as info;
 SELECT column_name, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'flow_sessions' AND table_schema = 'public'
 ORDER BY ordinal_position;
 
--- 4. Check if media table exists, if not create it
+-- 5. Check if media table exists, if not create it
 CREATE TABLE IF NOT EXISTS media (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -58,18 +62,20 @@ CREATE TABLE IF NOT EXISTS media (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- 5. Create indexes if they don't exist
+-- 6. Create indexes if they don't exist
 CREATE INDEX IF NOT EXISTS idx_media_user_id ON media(user_id);
 CREATE INDEX IF NOT EXISTS idx_media_created_at ON media(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_flow_sessions_user_id ON flow_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_flow_sessions_start_time ON flow_sessions(start_time DESC);
 
--- 6. Show all tables
+-- 7. Show all tables
 SELECT 'All tables in public schema:' as info;
 SELECT table_name 
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
 ORDER BY table_name;
 
--- 7. Count rows in each table
+-- 8. Count rows in each table
 SELECT 'Row counts:' as info;
 SELECT 
   'users' as table_name, 

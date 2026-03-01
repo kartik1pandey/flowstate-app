@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Code Execution API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #output {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Code Execution API Test</h1>
+    
+    <button onclick="testJavaScript()">Test JavaScript</button>
+    <button onclick="testPython()">Test Python</button>
+    <button onclick="testError()">Test Error Handling</button>
+    
+    <div id="output"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+        
+        async function executeCode(language, code) {
+            const output = document.getElementById('output');
+            output.innerHTML = 'Executing...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ language, code })
+                });
+                
+                const result = await response.json();
+                
+                let html = `<strong>Language:</strong> ${result.language}\n`;
+                html += `<strong>Status:</strong> <span class="${result.status}">${result.status}</span>\n\n`;
+                
+                if (result.output) {
+                    html += `<strong>Output:</strong>\n${result.output}\n`;
+                }
+                
+                if (result.error) {
+                    html += `<strong class="error">Error:</strong>\n${result.error}\n`;
+                }
+                
+                html += `\n<strong>Exit Code:</strong> ${result.exitCode}`;
+                
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<span class="error">Request failed: ${error.message}</span>`;
+            }
+        }
+        
+        function testJavaScript() {
+            const code = `console.log('Hello from JavaScript!');
+const numbers = [1, 2, 3, 4, 5];
+const sum = numbers.reduce((a, b) => a + b, 0);
+console.log('Sum:', sum);
+console.log('Test completed!');`;
+            
+            executeCode('javascript', code);
+        }
+        
+        function testPython() {
+            const code = `print('Hello from Python!')
+numbers = [1, 2, 3, 4, 5]
+total = sum(numbers)
+print(f'Sum: {total}')
+print('Test completed!')`;
+            
+            executeCode('python', code);
+        }
+        
+        function testError() {
+            const code = `print('test'\nthis is invalid syntax`;
+            executeCode('python', code);
+        }
+    </script>
+</body>
+</html>

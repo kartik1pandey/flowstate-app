@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { pdfGenerator } from './pdf-generator';
 
+
 interface EmailConfig {
   service?: string;
   host?: string;

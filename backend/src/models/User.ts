@@ -69,10 +69,10 @@ class User {
     const client = await pool.connect();
     try {
       const result = await client.query(
-        `INSERT INTO users (email, name, password, image) 
-         VALUES ($1, $2, $3, $4) 
+        `INSERT INTO users (email, name, password) 
+         VALUES ($1, $2, $3) 
          RETURNING *`,
-        [userData.email, userData.name, userData.password, userData.image || null]
+        [userData.email, userData.name, userData.password]
       );
       return this.mapRowToUser(result.rows[0]);
     } finally {

@@ -12,11 +12,34 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     const skip = parseInt(req.query.skip as string) || 0;
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
 
-    const allSessions = await FlowSession.find({ userId: req.userId! });
+    // Build query filter
+    const filter: any = { userId: req.userId! };
+    
+    if (startDate || endDate) {
+      filter.startTime = {};
+      if (startDate) {
+        filter.startTime.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.startTime.$lte = new Date(endDate);
+      } else if (startDate) {
+        // If only startDate provided, set endDate to now
+        filter.startTime.$lte = new Date();
+      }
+    }
+
+    const allSessions = await FlowSession.find(filter);
     const sessions = allSessions.slice(skip, skip + limit);
 
-    res.json({ sessions });
+    res.json({ 
+      sessions,
+      total: allSessions.length,
+      limit,
+      skip
+    });
   } catch (error) {
     console.error('Get sessions error:', error);
     res.status(500).json({ error: 'Failed to retrieve sessions' });

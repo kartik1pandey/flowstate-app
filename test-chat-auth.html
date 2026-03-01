@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Chat Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #output {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Chat Authentication Test</h1>
+    
+    <button onclick="testLogin()">1. Login</button>
+    <button onclick="checkToken()">2. Check Token</button>
+    <button onclick="testSync()">3. Test Sync</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    
+    <div id="output"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+        const output = document.getElementById('output');
+        
+        async function testLogin() {
+            output.innerHTML = 'Logging in...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/signin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'newuser@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.token) {
+                    // Store token the same way the app does
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('auth_user', JSON.stringify(data.user));
+                    
+                    output.innerHTML = `<span class="success">✅ Login successful!</span>\n\n`;
+                    output.innerHTML += `Token: ${data.token.substring(0, 30)}...\n`;
+                    output.innerHTML += `User: ${data.user.email}\n`;
+                    output.innerHTML += `\nToken stored in localStorage as 'auth_token'`;
+                } else {
+                    output.innerHTML = `<span class="error">❌ Login failed: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        function checkToken() {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('auth_user');
+            
+            if (token) {
+                output.innerHTML = `<span class="success">✅ Token found!</span>\n\n`;
+                output.innerHTML += `Token: ${token.substring(0, 30)}...\n`;
+                output.innerHTML += `User: ${user}\n`;
+                output.innerHTML += `\nThis is what the chat page will use.`;
+            } else {
+                output.innerHTML = `<span class="error">❌ No token found in localStorage</span>\n\n`;
+                output.innerHTML += `Please login first.`;
+            }
+        }
+        
+        async function testSync() {
+            output.innerHTML = 'Testing sync...';
+            
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                output.innerHTML = `<span class="error">❌ No token found. Please login first.</span>`;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/rag/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    output.innerHTML = `<span class="success">✅ Sync successful!</span>\n\n`;
+                    output.innerHTML += `File: ${data.filename}\n`;
+                    output.innerHTML += `Timestamp: ${data.timestamp}\n`;
+                    output.innerHTML += `\nThe chat page should work now!`;
+                } else {
+                    output.innerHTML = `<span class="error">❌ Sync failed: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            output.innerHTML = '🗑️ Storage cleared. You can test login again.';
+        }
+    </script>
+</body>
+</html>

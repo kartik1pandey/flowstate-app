@@ -109,15 +109,6 @@ const focusSpaces = [
     bgGradient: 'from-teal-500/10 via-cyan-500/10 to-blue-500/10'
   },
   { 
-    href: '/spaces/whiteboard-analytics', 
-    AnimatedIcon: ActivityIcon,
-    emoji: '🎯',
-    title: 'Whiteboard Analytics', 
-    description: 'Creativity & flow insights',
-    gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
-    bgGradient: 'from-violet-500/10 via-purple-500/10 to-fuchsia-500/10'
-  },
-  { 
     href: '/spaces/chat', 
     AnimatedIcon: ChatIcon,
     emoji: '🧠',
@@ -144,14 +135,80 @@ export default function Dashboard() {
   const [isProtectionEnabled, setIsProtectionEnabled] = useState(true);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    currentSessionTime: 0,
+    flowScore: 0,
+    recentSessionsCount: 0,
+    totalSessions: 0,
+    avgFocusScore: 0
+  });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/auth/signin');
     } else if (isAuthenticated) {
       loadRecentSessions();
+      loadStats();
     }
   }, [loading, isAuthenticated, router]);
+
+  // Auto-update current session time every second
+  useEffect(() => {
+    if (!isInFlow || !sessionStartTime) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - new Date(sessionStartTime).getTime()) / 60000);
+      setStats(prev => ({ ...prev, currentSessionTime: elapsed }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isInFlow, sessionStartTime]);
+
+  // Auto-update flow score
+  useEffect(() => {
+    setStats(prev => ({ ...prev, flowScore: Math.round(flowScore) }));
+  }, [flowScore]);
+
+  // Refresh stats every 30 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      loadStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const loadStats = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      // Get sessions from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const data = await sessionsAPI.getAll({ 
+        startDate: sevenDaysAgo.toISOString(),
+        limit: 100 
+      });
+
+      const sessions = data.sessions || [];
+      const avgFocus = sessions.length > 0
+        ? sessions.reduce((sum: number, s: any) => sum + (s.focusScore || 0), 0) / sessions.length
+        : 0;
+
+      setStats(prev => ({
+        ...prev,
+        recentSessionsCount: sessions.length,
+        totalSessions: data.total || sessions.length,
+        avgFocusScore: Math.round(avgFocus)
+      }));
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
 
   const loadRecentSessions = async () => {
     try {
@@ -323,14 +380,19 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
                   <Clock className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  {isInFlow && sessionStartTime 
-                    ? Math.floor((Date.now() - new Date(sessionStartTime).getTime()) / 60000) 
-                    : 0}m
-                </span>
+                <motion.span 
+                  key={stats.currentSessionTime}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+                >
+                  {stats.currentSessionTime}m
+                </motion.span>
               </div>
               <h3 className="text-gray-800 font-semibold mb-1">Current Session</h3>
-              <p className="text-gray-600 text-sm">Time in flow</p>
+              <p className="text-gray-600 text-sm">
+                {isInFlow ? 'Time in flow' : 'Not in session'}
+              </p>
             </motion.div>
 
             <motion.div
@@ -343,12 +405,19 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
                   <Target className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                  {Math.round(flowScore)}
-                </span>
+                <motion.span 
+                  key={stats.flowScore}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent"
+                >
+                  {stats.flowScore}
+                </motion.span>
               </div>
               <h3 className="text-gray-800 font-semibold mb-1">Flow Score</h3>
-              <p className="text-gray-600 text-sm">Current performance</p>
+              <p className="text-gray-600 text-sm">
+                {isInFlow ? 'Current performance' : `Avg: ${stats.avgFocusScore}`}
+              </p>
             </motion.div>
 
             <motion.div
@@ -361,9 +430,14 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
                   <Activity className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                  {recentSessions.length}
-                </span>
+                <motion.span 
+                  key={stats.recentSessionsCount}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"
+                >
+                  {stats.recentSessionsCount}
+                </motion.span>
               </div>
               <h3 className="text-gray-800 font-semibold mb-1">Recent Sessions</h3>
               <p className="text-gray-600 text-sm">Last 7 days</p>
@@ -417,7 +491,14 @@ export default function Dashboard() {
                     {sessionStartTime && `Started ${new Date(sessionStartTime).toLocaleTimeString()}`}
                   </p>
                   <div className="mb-8">
-                    <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">{Math.round(flowScore)}</div>
+                    <motion.div 
+                      key={stats.flowScore}
+                      initial={{ scale: 1.1, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2"
+                    >
+                      {stats.flowScore}
+                    </motion.div>
                     <div className="text-gray-700">Current Flow Score</div>
                   </div>
                   <motion.button
