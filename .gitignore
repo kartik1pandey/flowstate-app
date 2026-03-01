@@ -139,3 +139,5 @@ deploy-*.md
 !package-lock.json
 !tsconfig.json
 !.env.example
+!UPDATE_DEPLOYMENT.md
+!DEPLOYMENT_STATUS.md
