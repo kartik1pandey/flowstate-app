@@ -11,6 +11,7 @@
     "setup-sample-data": "ts-node --compiler-options {\\\"module\\\":\\\"commonjs\\\"} scripts/setup-sample-data.ts"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@monaco-editor/react": "^4.7.0",
     "@react-pdf/renderer": "^4.3.1",
     "@tensorflow/tfjs": "^4.15.0",
@@ -22,6 +23,7 @@
     "date-fns": "^3.0.0",
     "dotenv": "^17.2.3",
     "framer-motion": "^10.18.0",
+    "gsap": "^3.14.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.303.0",
