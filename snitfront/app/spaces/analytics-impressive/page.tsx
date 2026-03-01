@@ -365,8 +365,14 @@ export default function ImpressiveAnalytics() {
   );
 }
 
-function MetricCard({ icon, title, value, color, trend }: any) {
-  const colors = {
+function MetricCard({ icon, title, value, color, trend }: { 
+  icon: React.ReactNode; 
+  title: string; 
+  value: string | number; 
+  color: 'blue' | 'purple' | 'green' | 'orange'; 
+  trend?: 'up' | 'down' 
+}) {
+  const colors: Record<'blue' | 'purple' | 'green' | 'orange', string> = {
     blue: 'from-blue-500 to-blue-600',
     purple: 'from-purple-500 to-purple-600',
     green: 'from-green-500 to-green-600',

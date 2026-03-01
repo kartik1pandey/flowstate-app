@@ -70,7 +70,7 @@ Generated: ${new Date().toISOString()}
         languageStats[lang] = { count: 0, totalLines: 0, avgFocus: 0 };
       }
       languageStats[lang].count++;
-      languageStats[lang].totalLines += session.linesOfCode || 0;
+      languageStats[lang].totalLines += session.codeMetrics?.linesOfCode || 0;
       languageStats[lang].avgFocus += session.focusScore || 0;
     });
     
@@ -114,15 +114,14 @@ ${recentSessions.map((session, idx) => `
 - Quality Score: ${session.qualityScore}/100
 - Distractions: ${session.distractions}
 ${session.language ? `- Language: ${session.language}` : ''}
-${session.linesOfCode ? `- Lines of Code: ${session.linesOfCode}` : ''}
+${session.codeMetrics?.linesOfCode ? `- Lines of Code: ${session.codeMetrics.linesOfCode}` : ''}
 `).join('\n')}
 
 ## User Preferences
 ${settings ? `
-- Theme: ${settings.theme || 'default'}
-- Notifications: ${settings.notifications ? 'enabled' : 'disabled'}
-- Focus Mode: ${settings.focusMode ? 'enabled' : 'disabled'}
-- Intervention Frequency: ${settings.interventionFrequency || 'medium'}
+- Notifications: ${settings.notifications?.enabled ? 'enabled' : 'disabled'}
+- Flow Detection Sensitivity: ${settings.flowDetection?.sensitivity || 'medium'}
+- Local Processing: ${settings.privacy?.localProcessing ? 'enabled' : 'disabled'}
 ` : 'No preferences set'}
 
 ## Productivity Insights
