@@ -30,7 +30,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const ANALYTICS_URL = 'http://localhost:8003';
+const ANALYTICS_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL || 'http://localhost:8003';
 
 export default function AnalyticsPage() {
   const { loading: authLoading, isAuthenticated, user } = useAuth();
